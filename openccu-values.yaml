@@ -1,0 +1,48 @@
+# openccu-values.yaml – Helm-Values für OpenCCU auf k3s
+# HmIP-RFUSB über raw-uart (hb_rf_usb_2), DualCoPro. Anleitung: INSTALL.md
+# Chart: openccu/openccu 3.89.11
+
+image:
+  repository: ghcr.io/openccu/openccu
+  tag: 3.89.11.20260919            # feste Version statt latest
+
+persistence:
+  sys:                             # NICHT den Host-/sys mounten: sonst sieht der Pod die Host-Netzwerk-
+    enabled: false                 # interfaces statt eth0 → kein IP-Status, Alarm "No Internet"
+  data:
+    enabled: true
+    storageClass: "local-path"
+    accessMode: ReadWriteOnce
+    size: 2Gi
+
+securityContext:
+  privileged: true                 # Pod sieht damit /dev/raw-uart direkt, kein Device-Mount nötig
+
+service:
+  main:
+    type: NodePort
+    ports:
+      http:
+        enabled: true
+        port: 80
+        nodePort: 30180            # WebUI
+      https:
+        enabled: true
+        port: 443
+        nodePort: 30443
+      rfd:                         # BidCoS-RF XML-RPC
+        enabled: true
+        port: 2001
+        nodePort: 32001
+      hmip:                        # HmIP-RF XML-RPC
+        enabled: true
+        port: 2010
+        nodePort: 32010
+      rega:                        # ReGa Skript-API
+        enabled: true
+        port: 8181
+        nodePort: 30181
+      virt-dev:                    # Virtuelle Geräte / Gruppen
+        enabled: true
+        port: 9292
+        nodePort: 32092
